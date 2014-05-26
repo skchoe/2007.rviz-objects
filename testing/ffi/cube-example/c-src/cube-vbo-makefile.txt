@@ -1,0 +1,5 @@
+gcc -c cube-vbo.c -o cube-vbo.o -I"/home/skchoe/local/Mesa-7.0.3/include/GL"
+-I"/usr/include" -I"/usr/include/GL" -fexpensive-optimizations -O3
+
+
+gcc cube-vbo.o -o cube-vbo -L"/home/skchoe/local/Mesa-7.0.3/lib" -lglut -lGLU -lGL

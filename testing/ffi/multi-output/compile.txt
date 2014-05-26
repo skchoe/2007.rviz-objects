@@ -1,0 +1,4 @@
+gcc -c -fPIC multi_out.c -o multi_out.o
+gcc -shared -Wl  -o libmulti_out.so multi_out.o
+
+gcc -o main main.c -L. -lmulti_out

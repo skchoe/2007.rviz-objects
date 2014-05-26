@@ -1,0 +1,40 @@
+Dear matthew,
+
+The basic question of previous email is about how to understand cpointer well. Things different from
+_pointer(_cpointer) is that it's safe. But this doesn't help actual coding because I tends to 
+use _pointer based on origianl c-program coding style.
+The fact that cvector is a pointer to a memory block makes me so confusing. If I could get one
+c-code which we works with cvector, it would be better case because I can differentiate them
+in c-language level.
+
+The second questions below came from confusing c and java because the lack of pointer in java
+sometimes make me to have mistake in handling pointer explicitly. It was solved using malloc for
+array elements.
+
+
+I'm now try to make function handling array element in more low-level. For example if array is
+made by inlined struct, like sequence of complex numbers(struct cplx (r i))
+c-ptr = 
+ index:           0         1          2         3    
+content:      cplx0.r c cplx0.i cplx1.r cplx1.i
+
+I would like to do 2 things
+1. extend (make-cvector*) so that I can get 2 sub-cvectors such as
+   sub-cptr0   = cplx0.r cplx1.r 
+   sub-cptr1   = cplx0.i  cplx1.i
+
+2. if I can do a pointer arithmatic, I can access cplx1.i with *(cplx0.i + (ctype-sizeof cplx)). 
+   this will be useful for generating 2 arrays in #1.
+    sub-cptr0 = (array-by-jump c-ptr cplx0 stride)
+    sub-cptr1 = (array-by-jump c-ptr cplx0.i stride), where stride is (ctype-sizeof cplx)
+
+  I think (ptr-add), (ptr-offset) can be clue for this, but I wonder how can I handle cvector
+  with these. I need to get cpointer from (cvector-ref 0).
+
+Hoply I wrote in detail enough.
+
+Thank you for the help.
+
+Best regards,
+
+Seungkeol 

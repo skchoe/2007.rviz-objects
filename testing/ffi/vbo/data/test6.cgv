@@ -1,0 +1,23 @@
+struct Input
+{
+	float4 Position : POSITION;
+	float4 Color    : COLOR;
+};
+
+struct Output
+{
+	float4 Position : POSITION;
+	float4 Color    : COLOR;
+};
+
+uniform float4x4 ModelViewProjectionMatrix : state.matrix.mvp;
+
+Output main(Input IN)
+{
+	Output OUT;
+  
+	OUT.Position = mul(ModelViewProjectionMatrix, IN.Position);
+	OUT.Color    = IN.Color;
+	
+	return OUT;
+}

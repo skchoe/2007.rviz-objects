@@ -1,0 +1,264 @@
+<html><head></head><body><h1>Using OpenGL Vertex Buffer Objects</h1>
+
+
+<h2>Introduction and motivation</h2>
+
+<p>
+Realtime graphics relies on the CPU and the GPU working together.  Each of these components has a separate
+memory area attached to it and these areas are joined by a relatively small bus.
+The GPU requires all data it works on to be in the attached Video RAM (VRAM) and all data
+must at some point be moved across the bus, from CPU accessible RAM into the VRAM.  Compared to the
+speed of either VRAM or main system RAM, this bus is painfully slow and so
+we'd like a way to minimize the amount of data we force along this bottleneck and also when.
+</p>
+<p>
+We'll look at how OpenGL provides a way to do this for vertex data.  The mechanism is called Vertex Buffer Objects (VBOs).
+Each VBO encapsulates a chunk of VRAM, and can contain vertex data (like positions,
+normals, colours), or index data.
+</p>
+
+<h2>Basics</h2>
+
+<p>
+There are 3 main functions which you will require:
+</p>
+
+<pre>glGenBuffers
+glBindBuffer
+glBufferData
+</pre>
+
+<p>
+The first step is quite natural and involves generating ids for buffer objects.  This works exactly
+the same as generating texture objects:
+</p>
+
+<pre>GLuint vbo_id;
+
+glGenBuffers(1,&amp;vbo_id);
+</pre>
+
+<p>
+In order to use a VBO, you must first bind it.  There are two targets to bind to, the
+first is for actual vertex data called GL_ARRAY_BUFFER and the second is for
+indexes when drawing indexed primitives (GL_ELEMENT_ARRAY_BUFFER).  Say we wished
+to use the VBO we generated for storing vertex data:
+</p>
+
+<pre>glBindBuffer(GL_ARRAY_BUFFER,vbo_id);
+</pre>
+
+<p>
+We use glBufferData to send our data through the GL to store to the VRAM:
+</p>
+
+<pre>glBufferData( GL_ARRAY_BUFFER, size_of_data, data, GL_STATIC_DRAW );
+</pre>
+
+<p>
+The first parameter is a target, the second is the length of the data in bytes.  Next comes the
+actual data, finally a set of flags describing how the buffer will be used.
+</p>
+
+<p>
+The actual data is stored in whatever format required. However, GL needs certain data organised
+in certain ways.  For example, a basic vertex structure might contain position, normal and a texture
+coordinate.  One way to organise this is in a struct like so:
+</p>
+
+<pre>struct Vertex
+{
+  float pos[3];
+  float normal[3];
+  float tex0[2];
+
+};
+</pre>
+
+<p>
+A buffer of such vertices would be allocated and uploaded thus:
+</p>
+
+<pre>  int num_verts = 4;
+  Vertex* vb = new Vertex[num_verts];
+
+  // fill vb with something interesting
+
+  glBindBuffer(GL_ARRAY_BUFFER,vbo_id);
+
+  glBufferData(GL_ARRAY_BUFFER, num_verts * sizeof(Vertex), vb, GL_STATIC_DRAW);
+</pre>
+
+
+<p>
+To actually use the VBO to perform drawing we use an existing OpenGL mechanism, that
+of vertex arrays.  The VBO changes the notion of vertex array from a client side (i.e. in application
+memory) to server side (graphics memory) and avoids the transfer of data across the CPU-GPU bus on
+each draw call.
+</p>
+
+<p>
+Drawing the above (we'll presume the 4 vertices are organised as a 2 triangle strip):
+</p>
+
+<pre>
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+  glEnableClientState(GL_NORMAL_ARRAY);
+
+  glBindBuffer( GL_ARRAY_BUFFER, vbo_id );
+
+  glVertexPointer( 3, GL_FLOAT, sizeof(Vertex), NULL );
+  glNormalPointer( GL_FLOAT, sizeof(Vertex), (void*)12 );
+  glTexCoordPointer( 2, GL_FLOAT, sizeof(Vertex), (void*)(12+12) );
+
+  glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
+
+  glDisableClientState( GL_VERTEX_ARRAY );
+  glDisableClientState( GL_TEXTURE_COORD_ARRAY );
+  glDisableClientState( GL_NORMAL_ARRAY );
+</pre>
+
+<p>
+The first steps are to enable the various arrays (this doesn't need to be done for each draw command,
+you just need to have enabled the buffers before using them).  Next we specify the array
+pointers.  Unlike vertex arrays, we don't pass actual pointers to the data, but instead pass in
+offsets to the vertex buffer.  In this case, the position (VertexPointer) is the first
+part of the vertex structure and so has offset 0. The normal comes next at offset 12 (3*sizeof(float)), and finally the
+texture coordinate at position 24.
+</p>
+
+<p>
+To enable indexed primitive drawing (the recommended route for complex meshes), you'll need to
+create an index buffer.   This is done in much the same way as a vertex data buffer:
+</p>
+<pre>
+  GLuint ivbo_id;
+
+  glGenBuffers(1,&amp;ivbo_id);
+
+  int num_indices = 6;
+  unsigned int* ib = new unsigned int[num_indices];
+
+  // fill index buffer with something interesting, here we'll use the indexes
+  // to transform the above 3 vertices from a strip to triangles-in-strip-order
+  vb[0] = 0;
+  vb[1] = 1;
+  vb[2] = 2;
+  vb[3] = 1;
+  vb[4] = 2;
+  vb[5] = 3;
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,ivbo_id);
+
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_indices * sizeof(unsigned int), ib, GL_STATIC_DRAW);
+</pre>
+
+<p>
+Drawing operates in a similar manner to above, we just use glDrawElements instead:
+</p>
+<pre>
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+  glEnableClientState(GL_NORMAL_ARRAY);
+
+  glBindBuffer( GL_ARRAY_BUFFER, vbo_id );
+  glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ivbo_id );
+
+  glVertexPointer( 3, GL_FLOAT, sizeof(Vertex), NULL );
+  glNormalPointer( GL_FLOAT, sizeof(Vertex), (void*)12 );
+  glTexCoordPointer( 2, GL_FLOAT, sizeof(Vertex), (void*)(12+12) );
+
+  glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, (void*)0);
+
+  glDisableClientState( GL_VERTEX_ARRAY );
+  glDisableClientState( GL_TEXTURE_COORD_ARRAY );
+  glDisableClientState( GL_NORMAL_ARRAY );
+</pre>
+
+<p>
+Note that when using VBOs we pass a null (0) pointer to glDrawElements where we would ordinarily pass
+a pointer to the index buffer.
+</p>
+
+<p>
+The next step is to consider the impact using VBOs has on the card, performance and the
+structure of 3D software.
+</p>
+
+<h2>Managing multiple buffers</h2>
+
+<p>
+Although the basic method is fine for simple single-mesh models or models without different
+shaders in use, we will often want to use models with far more complex requirements.
+</p>
+
+<p>
+Lets say for instance that our mesh has two sections, one which uses a texture object
+called 'tex0_id' and the other that uses 'tex1_id'.  We'll obviously need to submit
+the geometry in two parts, with the desired textures bound, something like:
+</p>
+
+<pre>  glEnableClientState(GL_VERTEX_ARRAY);
+  glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+  glEnableClientState(GL_NORMAL_ARRAY);
+
+  // geometry for tex0:
+
+  glBindTexture( GL_TEXTURE_2D, tex0_id);
+
+  glBindBuffer( GL_ARRAY_BUFFER, vbo0_id );
+  glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ivbo0_id );
+
+  glVertexPointer( 3, GL_FLOAT, sizeof(Vertex), NULL );
+  glNormalPointer( GL_FLOAT, sizeof(Vertex), (void*)12 );
+  glTexCoordPointer( 2, GL_FLOAT, sizeof(Vertex), (void*)(12+12) );
+
+  glDrawElements(GL_TRIANGLES, num_indices0, GL_UNSIGNED_INT, 0);
+
+  // geometry for tex1:
+
+  glBindTexture( GL_TEXTURE_2D, tex1_id);
+
+  glBindBuffer( GL_ARRAY_BUFFER, vbo1_id );
+  glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ivbo1_id );
+
+  glVertexPointer( 3, GL_FLOAT, sizeof(Vertex), NULL );
+  glNormalPointer( GL_FLOAT, sizeof(Vertex), (void*)12 );
+  glTexCoordPointer( 2, GL_FLOAT, sizeof(Vertex), (void*)(12+12) );
+
+  glDrawElements(GL_TRIANGLES, num_indices1, GL_UNSIGNED_INT, 0);
+
+  glDisableClientState( GL_VERTEX_ARRAY );
+  glDisableClientState( GL_TEXTURE_COORD_ARRAY );
+  glDisableClientState( GL_NORMAL_ARRAY );
+</pre>
+
+
+<p>
+An alternative would be to pack the vertices into a single VBO, and either change
+the indexes to reflect this, or update the vertex pointers to refer to the correct start vertex (via an offset in gl*Pointer).
+</p>
+<p>
+A powerful and general way to handle these issues is to use a geometry cache where we store a certain number
+of buffers in VRAM at all times, and swap data in and out of the cache as required. 
+</p>
+
+<h2>Conclusion</h2>
+
+<p>
+We've seen how vertex buffer objects provide a powerful interface to managing buffers in
+VRAM.  Although no direct performance comparisons have been done in this article (available
+elsewhere), it is generally recognized knowledge that VBOs outperform any other method
+at handling large amounts of geometry.  They also provide a unified way of looking at
+geometry and the means of submitting it for drawing.
+</p>
+<p>
+Source code is available <a href="http://www.atomictiger.net/articles/article1.zip">here</a>.  The code for initializing VBOs is within the OurFactory class. Code
+for using the VBOs is in the Display::render() method.
+</p>
+<h2>References</h2>
+
+<dl>
+[1] OpenGL 2.1 Specification - http://www.opengl.org/documentation/current_version/
+</dl></body></html>

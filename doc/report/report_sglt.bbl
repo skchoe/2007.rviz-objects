@@ -1,0 +1,60 @@
+\begin{thebibliography}{10}
+
+\bibitem{Barzilay04foreigninterface}
+{Eli Barzilay, Dmitry Orlovsky}.
+\newblock {Foreign interface for PLT Scheme}.
+\newblock In {\em {In Workshop on Scheme and Functional Programming}}, 2004.
+\newblock
+  \texttt{\\http://repository.readscheme.org/ftp/papers/sw2004/\\barzilay.pdf}.
+
+\bibitem{SGL}
+{GL: 3-D Graphics in PLT Scheme}.
+\newblock \texttt{\\http://pre.plt-scheme.org/docs/html/sgl/index.html}.
+
+\bibitem{GLUT}
+{GLUT (Graphics Library Utility Toolkit)}.
+\newblock
+  \texttt{\\http://www.opengl.org/documentation/\\specs/glut/spec3/spec3.html}.
+
+\bibitem{Java3D}
+{Java 3D - 3D Graphics Tutorial and Information}.
+\newblock \texttt{\\http://www.java3d.org/}.
+
+\bibitem{jogl}
+{Java OpenGL}.
+\newblock \texttt{\\http://en.wikipedia.org/wiki/JOGL}.
+
+\bibitem{Flatt06schemewith}
+{Matthew Flatt and Robert Bruce Findler and Matthias Felleisen}.
+\newblock {Scheme with Classes, Mixins, and Traits}.
+\newblock In {\em In Asian Symposium on Programming Languages and Systems
+  (APLAS) 2006}, pages 270--289, 2006.
+
+\bibitem{MrEd}
+{MrEd}.
+\newblock \texttt{http://www.plt-scheme.org/software/mred/}.
+
+\bibitem{OpenInventor}
+{Open Inventor}.
+\newblock \texttt{\\http://oss.sgi.com/projects/inventor}.
+
+\bibitem{OpenSceneGraph}
+{Open Scene Graph project}.
+\newblock \texttt{\\http://www.openscenegraph.org/projects/osg}.
+
+\bibitem{OpenGL}
+{OpenGL: The Industry's Foundation for High Performance Graphics}.
+\newblock \texttt{http://www.opengl.org/}.
+
+\bibitem{Findler06slideshow}
+{Robert Bruce Findler, Matthew Flatt}.
+\newblock {Slideshow: functional presentations}.
+\newblock In {\em {Journal of Functional Programming}}, volume v.16 n.4-5,
+  pages 583--619, July 2006.
+\newblock \texttt{\\http://www.cs.utah.edu/plt/publications/jfp05-ff.pdf}.
+
+\bibitem{Scenegraph}
+{Scene Graph in Wikipedia}.
+\newblock \texttt{\\http://en.wikipedia.org/wiki/Scene-graph}.
+
+\end{thebibliography}

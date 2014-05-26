@@ -1,0 +1,152 @@
+----------------------------------------------------------------by 2008.June.
+15. material node -> send r set-material : implicit call routine
+
+14. animation imple.
+
+13. find more data(small obj file of fishes)
+
+
+12. find optimal texture size for each fish.
+
+11. random scattering of school of fishes of same kind.
+
+10. imple. display-list for all render subclasses except cube.scm
+
+9. viz-class zoom-in/out impl. (ok except picked object zoom in/out)
+
+8. surface.scm renderer  (ok)
+   normal-vector testing
+   texture mapping im ple.
+
+7. Construct-fish-flat: (ok - except large number of fishes)
+   new domain data structure originated from obj file format.
+   Goal: define a list of set of obj files
+   -> several group of 100 fishes move together.
+
+6.5 obj model centering, scaling (ok)
+
+6. Obj file importing (ok except comment, ignore to endof line)
+
+
+5. Scene boundingbox
+
+   - input: scene-graph
+   - position of transform
+     * each scene node
+     * additionals in primitive
+   - traverse all node/leaf node and renderer to pickup transform
+   - extract location/position info from matrix
+   - refer localCoordinate->globalCoordinate routine in moldesign
+
+   - apply (center of renderer -> global coordinate)
+   - find bounding box
+   - get translation matrix from bounding box
+   - apply the matrix to matrix on top of scene tree
+
+4. Picking. (ok need more testing)
+
+   - Implements pick.scm
+     1) PickableID
+          - use hashtable (lift up to global)
+          - random routine -> check if it's a first input 
+     2) implements pick() routine in each renderer class
+
+
+  
+3. Object Model setup
+
+   - Model in real life: mail transfering system
+     Developed in history: 
+       	(System setup)
+       	(1) Need to setup station structure -> Destination address
+       	(2) Absolute addressing -> relative addressing
+       
+	(Utilization)
+       	(1) Shipping to train in complicated station structure 
+         	-> On desktop/office transfering
+                            
+   - Application to the project:
+     (Real life - users work) 
+     * desktop constru.        -  viewer
+     * network setup           -  route to station
+     * mail - client setup     -  SMTP
+     (real life - internal work)
+     * connection to mail server
+     * server - server transfer
+
+  - Application to sglt
+     * Client specific data structure(CDS) 
+       -> intermediate structure (IS) 
+       -> scene tree (ST) 
+       -> draw (VIEWER)
+     * scene tree node -> viewing window - viewer (statically fixed;
+                                                   need more extension)
+     * CDS -> IS : User create IS based on specification on how to compose IS
+     * IS -> ST : Automatic generation (either compile time/run time)
+
+
+ - CDS -> IS
+     (define (geom-object parent-node attributes size/orientation)
+	(scene-tree-node parent-node attributes size/orientation))
+
+	ex) cost_of_transportation
+           * other fields (*time, *state#, max_weight)  
+          
+           * 2-wheel truck
+             cabinet <- make-cabinet
+	     register-to-scene-tree (null cabinet)
+             loadingbox <- make-loadingbox
+	     register-to-scene-tree (cabinet loadingbox)
+             wheel1 <- make-wheel
+             wheel2 <- make-wheel
+             register-to-scene-tree (cabinet wheel1)
+             register-to-scene-tree (loadingbox wheel2)
+
+ 
+  - use match
+  - use succ-K, fail-K.
+
+2. Tree structure 
+
+   - new renderer(node) : transformation in given local coordinates
+
+   - new node : group node works as transformation to define local coord.
+
+   - Local, global coordinate are comparative concept.
+
+  (OKEY 1/22/08)
+
+
+1. Single List Structure
+
+  ___________________________________________________________
+  |           |          |              |
+  n0          n1         n2             n3 ...  : xx-renderer objects
+  - Renderer 
+     * xform: protected member of Renderer 
+     * primitive: abstract member of Renderer (set-primitive)
+
+  - Need new (render)
+     (define (render-fp prim)
+
+        (gl-push-matrix)
+        (gl-mult-matrix)
+
+        (render-fp prim)
+
+        (gl-pop-matrix)
+
+  - Appearance, material property are all in renderer 
+    * not in graph node
+
+  (OKEY 1/16/08)
+
+
+  -----------------------------------------------------------------------
+  Created again from 2010/10/07.......to apply GPU on computation related
+  to visualization.
+
+  1) Target: normal vector computation - memory bound computation : Need
+  parallelization by resources in streaming multiprocessor
+
+  2) Graph parallelization by CPU. http://portal.acm.org/citation.cfm?id=2515

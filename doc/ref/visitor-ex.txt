@@ -1,0 +1,3 @@
+Visitor-ex
+
+http://sourcemaking.com/design_patterns/visitor

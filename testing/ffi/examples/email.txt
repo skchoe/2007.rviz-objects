@@ -1,0 +1,161 @@
+
+I here wrie a question I had been trying quite a long time.
+For given C code which deals with pointer of array and struct,
+I couldn't get the scheme code working right
+
+
+*******
+given sine_struct.so
+*******
+
+float 
+sine_value (float in)
+{
+    return sin(in);
+}
+
+
+float* 
+sine_array (int num, const float* ins)
+{
+  int i=0;
+  float* outs = malloc(sizeof(float) * num);
+  for(i = 0 ; i < num ; i++)
+    outs[i] = sine_value(ins[i]);
+
+  return outs;
+}
+
+SineStruct*
+sine_struct (SineStruct* ss)
+{
+  SineStruct* sS = (SineStruct*) malloc (sizeof(SineStruct));
+  float in = ss->in;
+  sS->in = in;  
+  sS->out = sine_value(in);
+
+  return sS;
+}
+
+SineStruct**
+sine_struct_array (int num, SineStruct** ss)
+{
+  int i = 0;
+  SineStruct** outs = (SineStruct**)malloc(sizeof(SineStruct) * num);
+  for(i=0;i<num;i++)
+  {
+    outs[i] = sine_struct (ss[i])
+  }
+      
+  return outs;
+}
+
+
+***
+following scheme code calls the functions:
+
+#lang scheme
+(require scheme/foreign)
+(unsafe!)
+
+(define in-val (list 0.0 1.7 3.1))
+(define in-valc (list->cvector in-val _float))
+
+(define sine-lib (ffi-lib  "sine_structs.so"))
+
+
+  
+;1 pointer of array of float -> work right
+
+(define value-seT (malloc (* (ctype-sizeof _float) 2) 'raw))
+(define value-set (make-cvector* value-seT _float 2))
+(cvector-set! value-set 0 1.75)
+(cvector-set! value-set 1 3.14)
+
+;or the next 3 lines are possible
+;(define value-seT (malloc (* (ctype-sizeof _float) 2) 'raw))
+;(ptr-set! value-seT _float 0 1.75)
+;(ptr-set! value-seT _float 1 3.14)
+
+(let* ([sa (get-ffi-obj 'sine_array
+                         sine-lib 
+                         (_cprocedure (list _uint _pointer)
+                                     _pointer)
+                         (lambda (x) (printf "NOT found\n"))
+                         )]
+         [out-valc (sa 2 value-seT)])
+  (printf " 0: ~s\n" (ptr-ref out-valc _float 0))
+  (printf " 1:  ~s\n" (ptr-ref out-valc _float 1))
+  )
+
+; Question 1.
+; In this example, if I use (make-cvector) instead of malloc,
+; I got an error complaining:cannot conver c pointer to cvector
+; I need to clearly know how _pointer and _cpointer are different
+
+
+
+ 
+;2 array of struct
+
+(define struct-set (malloc (* (ctype-sizeof _SineStruct) 2) 'raw))
+(ptr-set! struct-set _SineStruct 0 (make-SineStruct 0.0 1.0))
+(ptr-set! struct-set _SineStruct 1 (make-SineStruct 1.75 1.0))
+
+; Question how (_fun ..) need to defined for each case
+; (in above pointer, below cvector types)
+
+;(define struct-set (make-cvector _SineStruct 2))
+;(cvector-set! struct-set 0 (make-SineStruct 0.0 1.0))
+;(cvector-set! struct-set 1 (make-SineStruct 1.75 1.0))
+;
+(let* (
+       [ssa (get-ffi-obj 'sine_struct_array
+                        sine-lib
+                        ;(_cprocedure (list _uint _pointer)ct-pointer)
+                        (_fun _uint _pointer -> _pointer)
+                        (lambda (x) (printf "sine_struct_array: NOT found\n"))
+                        )]
+       ;[out-valc (ssa 2 struct-set)]
+       )
+
+;    (let* (
+;           [out-valc (make-cvector* out-valc _SineStruct 2)]
+;           [ss0 (cvector-ref out-valc 0)]
+;           [ss1 (cvector-ref out-valc 1)])
+;      (printf " 0 in:~s,  out:~s\n" (SineStruct-in ss0) (SineStruct-out ss0))
+;      (printf " 1 in:~s,  out:~s\n" (SineStruct-in ss1) (SineStruct-out ss1))
+;      )
+    #f
+    )
+
+The #2 code caused seg. error when (ssa) is called.
+
+
+The eventual goal for this practice is to write scheme fuction that deals with
+pointer (or cvector) of sequenceof in field of sine_struct in array of
+sine_struct.That is to say,
+
+Given seq
+ 
+(list  SineStruct1 .... SineStructK)
+
+I would like to get both
+  (list (SineStruct-in SineStruct1) ...(SineStruct-in SineStructK))
+and
+  (list (SineStruct-out SineStruct1) ...(SineStruct-out SineStructK)), so that
+I can use them in vertex buffer and color buffer separately.
+
+
+
+When it comes to project, I made some opengl function interface in scheme with
+testing example(like sgl/example). They work well in simple buffer stucture,
+but not directly complex structure type(using stride).
+
+Thanks for reading.
+
+Best regards,
+
+Seungkeol
+
+

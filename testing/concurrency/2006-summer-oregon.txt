@@ -1,0 +1,4 @@
+http://www.cs.uoregon.edu/research/summerschool/summer06/
+
+Design and Implementation of Concurrent Systems  	Matthew Flatt
+Operating systems have successfully supported concurrency for decades through separate processes. OS-style processes are too heavyweight and coarse-grained for most application-level concurrency, but a safe programming language can provide process-like abstractions at a much lower cost. When processes become a central part of the program organization, then programmers need good abstractions for organizing processes and communications, so we will study Reppy's Concurrent ML. In addition, programmers need a way to terminate processes and account for resources, so we will look at PLT Scheme's custodians. Finally, we will consider the combination of Concurrent ML and custodians, and how programmers can implement communication patterns that are robust against termination of one communication party.

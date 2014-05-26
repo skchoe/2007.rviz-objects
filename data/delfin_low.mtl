@@ -1,0 +1,8 @@
+newmtl Default
+Ns 10
+d 1
+illum 2
+Ka 0.200000 0.200000 0.200000
+Kd 0.500000 0.500000 0.500000
+Ks 0.200000 0.200000 0.200000
+map_Kd data/delfinek.bmp
